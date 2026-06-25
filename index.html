@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自作軽量レコーダー</title>
+    <title>自作軽量レコーダー (全画面最適化版)</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -65,6 +65,8 @@
         #startBtn:hover { background-color: #27ae60; }
         #stopBtn { background-color: #e74c3c; color: white; }
         #stopBtn:hover { background-color: #c0392b; }
+        #fullscreenBtn { background-color: #7f8c8d; color: white; }
+        #fullscreenBtn:hover { background-color: #95a5a6; }
         button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
         
         #status {
@@ -110,9 +112,14 @@
 
     <div class="controls">
         <div class="setting-group">
+            <span style="font-weight: bold; color: #7f8c8d; font-size:14px;">【表示】</span>
+            <button id="fullscreenBtn" type="button">アプリを全画面表示にする</button>
+        </div>
+
+        <div class="setting-group">
             <span style="font-weight: bold; color: #7f8c8d; font-size:14px;">【モード】</span>
             <label class="setting-item">
-                <input type="radio" name="recordMode" value="video" checked> 画面＋音声
+                <input type="radio" name="recordMode" value="video" checked> 画面全体の録画＋音声
             </label>
             <label class="setting-item">
                 <input type="radio" name="recordMode" value="audio"> 音声のみ記録
@@ -132,7 +139,7 @@
         <button id="startBtn">記録開始</button>
         <button id="stopBtn" disabled>停止</button>
         
-        <div id="status">準備完了</div>
+        <div id="status">準備完了（※録画時は「画面全体」を選択してください）</div>
     </div>
 
     <div id="previewContainer" style="display: none;">
@@ -151,12 +158,26 @@
         
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
         const statusDiv = document.getElementById('status');
         const systemAudioCheck = document.getElementById('systemAudioCheck');
         const micAudioCheck = document.getElementById('micAudioCheck');
         const mediaPreviewPlace = document.getElementById('mediaPreviewPlace');
         const previewContainer = document.getElementById('previewContainer');
         const downloadBtn = document.getElementById('downloadBtn');
+
+        // アプリ自体を全画面表示にする機能
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`全画面表示に失敗しました: ${err.message}`);
+                });
+                fullscreenBtn.textContent = "全画面表示を解除";
+            } else {
+                document.exitFullscreen();
+                fullscreenBtn.textContent = "アプリを全画面表示にする";
+            }
+        });
 
         function getSupportedMimeType(mode) {
             if (mode === "audio") return 'audio/webm; codecs=opus';
@@ -185,15 +206,24 @@
                 let hasAudio = false;
 
                 if (currentMode === "video") {
+                    // 可能な限り「画面全体」を初期選択させるためのオプション(displaySurface)を追加
                     displayStream = await navigator.mediaDevices.getDisplayMedia({
                         video: { 
                             width: { ideal: 1280, max: 1280 }, 
                             height: { ideal: 720, max: 720 }, 
-                            frameRate: { ideal: 30, max: 30 } 
+                            frameRate: { ideal: 30, max: 30 },
+                            displaySurface: "monitor" // ブラウザに画面全体を優先選択させるヒント
                         },
                         audio: true 
                     });
+                    
                     videoTrack = displayStream.getVideoTracks()[0];
+
+                    // ユーザーが「画面全体」ではなくタブやウィンドウを選んでいないかチェック（念のため）
+                    const settings = videoTrack.getSettings();
+                    if (settings.displaySurface && settings.displaySurface !== "monitor") {
+                        console.log("ユーザーが全画面以外を選択しました");
+                    }
 
                     if (systemAudioCheck.checked && displayStream.getAudioTracks().length > 0) {
                         const systemAudioSource = audioContext.createMediaStreamSource(new MediaStream([displayStream.getAudioTracks()[0]]));
@@ -205,7 +235,11 @@
                 } 
                 else if (currentMode === "audio" && systemAudioCheck.checked) {
                     try {
-                        displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                        displayStream = await navigator.mediaDevices.getDisplayMedia({ 
+                            video: true, 
+                            audio: true,
+                            video: { displaySurface: "monitor" }
+                        });
                         displayStream.getVideoTracks().forEach(t => t.stop());
                         if (displayStream.getAudioTracks().length > 0) {
                             const systemAudioSource = audioContext.createMediaStreamSource(new MediaStream([displayStream.getAudioTracks()[0]]));
