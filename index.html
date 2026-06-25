@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自作軽量レコーダー</title>
+    <title>自作軽量レコーダー (全画面最適化版)</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: #f0f3f5;
             color: #333;
-            max-width: 700px;
+            max-width: 800px; /* 少し横幅を広げました */
             margin: 0 auto;
             padding: 20px;
             text-align: center;
@@ -83,9 +83,10 @@
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
+        /* ★全画面表示・プレビュー最大化のために max-width: 500px; を解除しました */
         video, audio {
             width: 100%;
-            max-width: 500px;
+            max-width: 100%; /* 枠いっぱいに広がるように変更 */
             border-radius: 6px;
             background: #000;
         }
@@ -185,11 +186,13 @@
                 let hasAudio = false;
 
                 if (currentMode === "video") {
+                    // ★ getDisplayMedia の設定に displaySurface: "monitor" を追加
                     displayStream = await navigator.mediaDevices.getDisplayMedia({
                         video: { 
                             width: { ideal: 1280, max: 1280 }, 
                             height: { ideal: 720, max: 720 }, 
-                            frameRate: { ideal: 30, max: 30 } 
+                            frameRate: { ideal: 30, max: 30 },
+                            displaySurface: "monitor" // 画面全体（モニター）の選択肢を優先表示
                         },
                         audio: true 
                     });
@@ -205,7 +208,10 @@
                 } 
                 else if (currentMode === "audio" && systemAudioCheck.checked) {
                     try {
-                        displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                        displayStream = await navigator.mediaDevices.getDisplayMedia({ 
+                            video: { displaySurface: "monitor" }, // 音声のみの場合も一応設定
+                            audio: true 
+                        });
                         displayStream.getVideoTracks().forEach(t => t.stop());
                         if (displayStream.getAudioTracks().length > 0) {
                             const systemAudioSource = audioContext.createMediaStreamSource(new MediaStream([displayStream.getAudioTracks()[0]]));
