@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自作超軽量レコーダ/title>
+    <title>自作軽量レコーダー</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -158,11 +158,8 @@
         const previewContainer = document.getElementById('previewContainer');
         const downloadBtn = document.getElementById('downloadBtn');
 
-        // Chromebook（ChromeOS）で一番軽くて動作するコーデックを自動選択
         function getSupportedMimeType(mode) {
             if (mode === "audio") return 'audio/webm; codecs=opus';
-            
-            // 動画の場合、負荷の低いVP8またはH.264を優先（重いVP9を回避）
             const types = [
                 'video/webm; codecs=vp8,opus',
                 'video/webm; codecs=h264,opus',
@@ -187,7 +184,6 @@
                 audioDestination = audioContext.createMediaStreamDestination();
                 let hasAudio = false;
 
-                // 1. 画面キャプチャ（HD 720p / 30fps に制限して劇的に軽量化）
                 if (currentMode === "video") {
                     displayStream = await navigator.mediaDevices.getDisplayMedia({
                         video: { 
@@ -207,7 +203,6 @@
                         displayStream.getAudioTracks().forEach(t => t.stop());
                     }
                 } 
-                // 音声のみモード
                 else if (currentMode === "audio" && systemAudioCheck.checked) {
                     try {
                         displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
@@ -220,7 +215,6 @@
                     } catch(e) { console.warn(e); }
                 }
 
-                // 2. マイク音声
                 if (micAudioCheck.checked) {
                     try {
                         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -233,7 +227,6 @@
                     }
                 }
 
-                // 3. ストリーム統合
                 const finalTracks = [];
                 const mimeType = getSupportedMimeType(currentMode);
 
@@ -279,7 +272,6 @@
                     stopBtn.disabled = true;
                 };
 
-                // 録画開始
                 mediaRecorder.start();
                 statusDiv.classList.add('status-recording');
                 statusDiv.textContent = currentMode === "video" ? "● 録画中（低負荷モード）..." : "● 録音中...";
