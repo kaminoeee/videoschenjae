@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自作軽量画面レコーダー/title>
+    <title>自作軽量レコーダー</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -106,7 +106,7 @@
 <body>
 
     <h1>超軽量レコーダー</h1>
-    <div class="description">高画質・ヌルヌル滑らか版（Full HD 1080p / 60fps 高フレームレート設定）</div>
+    <div class="description">バランス安定版（HD調整画質 / 45fps 中高フレームレート設定）</div>
 
     <div class="controls">
         <div class="setting-group">
@@ -185,14 +185,12 @@
                 let hasAudio = false;
 
                 if (currentMode === "video") {
-                    // ★ 画質をフルHD（1920x1080）に、フレームレートを 60fps に引き上げ
                     displayStream = await navigator.mediaDevices.getDisplayMedia({
                         video: { 
-                            width: { ideal: 1920, max: 1920 }, 
-                            height: { ideal: 1080, max: 1080 }, 
-                            frameRate: { ideal: 60, max: 60 }, // 60fps（ヌルヌル設定）
-                            resizeMode: "none",                 // 画質低下（圧縮）をなるべく防ぐ
-                            displaySurface: "monitor"          // 画面全体を優先
+                            width: { ideal: 1280 }, 
+                            height: { ideal: 720 }, 
+                            frameRate: { ideal: 45, max: 45 },
+                            displaySurface: "monitor"
                         },
                         audio: true 
                     });
@@ -246,11 +244,9 @@
 
                 const combinedStream = new MediaStream(finalTracks);
                 
-                // ★ 画質向上に合わせて、録画のビットレート（データ転送量）も少し高めに指定（5Mbps = 5000000）
-                // これにより、激しい動きでもブロックノイズ（モザイクのような荒れ）が出にくくなります。
                 mediaRecorder = new MediaRecorder(combinedStream, { 
                     mimeType: mimeType,
-                    videoBitsPerSecond: 5000000 
+                    videoBitsPerSecond: 2500000 
                 });
 
                 mediaRecorder.ondataavailable = (e) => {
@@ -286,7 +282,7 @@
 
                 mediaRecorder.start();
                 statusDiv.classList.add('status-recording');
-                statusDiv.textContent = currentMode === "video" ? "● 録画中（高画質・60fpsモード）..." : "● 録音中...";
+                statusDiv.textContent = currentMode === "video" ? "● 録画中（バランスモード）..." : "● 録音中...";
                 
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
