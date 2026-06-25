@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高機能・軽量レコーダー</title>
+    <title>自作超軽量レコーダ/title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f4f7f6;
+            background-color: #f0f3f5;
             color: #333;
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto;
             padding: 20px;
             text-align: center;
         }
-        h1 { color: #2c3e50; margin-bottom: 5px; }
-        .description { color: #7f8c8d; font-size: 14px; margin-bottom: 20px; }
+        h1 { color: #2c3e50; font-size: 24px; margin-bottom: 5px; }
+        .description { color: #7f8c8d; font-size: 13px; margin-bottom: 20px; }
         
         .controls {
             margin: 20px 0;
             padding: 20px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         
         .setting-group {
@@ -30,7 +30,7 @@
             justify-content: center;
             gap: 20px;
             flex-wrap: wrap;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
@@ -38,21 +38,22 @@
         .setting-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             font-weight: bold;
+            font-size: 14px;
             cursor: pointer;
         }
 
         .setting-item input[type="checkbox"], .setting-item input[type="radio"] {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
         }
         
         button {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
-            padding: 12px 28px;
+            padding: 10px 24px;
             margin: 5px;
             border: none;
             border-radius: 6px;
@@ -68,65 +69,50 @@
         
         #status {
             font-weight: bold;
-            margin: 15px 0 0 0;
+            margin-top: 15px;
             color: #7f8c8d;
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 13px;
         }
         .status-recording { color: #e74c3c !important; animation: blink 1.5s infinite; }
         @keyframes blink { 50% { opacity: 0.5; } }
         
         #previewContainer {
-            margin-top: 25px;
+            margin-top: 20px;
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         video, audio {
             width: 100%;
-            max-width: 640px;
+            max-width: 500px;
             border-radius: 6px;
             background: #000;
         }
-        audio {
-            background: #f1f3f4;
-            height: 54px;
-        }
+        audio { background: #f1f3f4; height: 50px; }
         .download-link {
             display: inline-block;
             margin-top: 15px;
-            padding: 12px 24px;
+            padding: 10px 20px;
             background-color: #3498db;
             color: white;
             text-decoration: none;
             border-radius: 6px;
             font-weight: bold;
-        }
-        .download-link:hover { background-color: #2980b9; }
-        
-        .tip-box {
-            background-color: #e8f4fd;
-            border-left: 4px solid #3498db;
-            padding: 10px;
-            margin: 15px auto;
-            max-width: 600px;
-            text-align: left;
-            font-size: 13px;
-            color: #2c3e50;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <h1>軽量画面録画＆音声レコーダー</h1>
-    <div class="description">GitHub Pages対応 / インストール不要</div>
+    <h1>超軽量レコーダー</h1>
+    <div class="description">Chromebook・低スペックPC最適化版（HD 720p / 30fps）</div>
 
     <div class="controls">
         <div class="setting-group">
-            <span style="font-weight: bold; color: #7f8c8d;">【モード】</span>
+            <span style="font-weight: bold; color: #7f8c8d; font-size:14px;">【モード】</span>
             <label class="setting-item">
-                <input type="radio" name="recordMode" value="video" checked> 画面＋音声（動画）
+                <input type="radio" name="recordMode" value="video" checked> 画面＋音声
             </label>
             <label class="setting-item">
                 <input type="radio" name="recordMode" value="audio"> 音声のみ記録
@@ -134,12 +120,12 @@
         </div>
 
         <div class="setting-group">
-            <span style="font-weight: bold; color: #7f8c8d;">【音声設定】</span>
+            <span style="font-weight: bold; color: #7f8c8d; font-size:14px;">【音声】</span>
             <label class="setting-item">
-                <input type="checkbox" id="systemAudioCheck" checked> 画面の音（システム音）
+                <input type="checkbox" id="systemAudioCheck" checked> ゲームの音（システム音）
             </label>
             <label class="setting-item">
-                <input type="checkbox" id="micAudioCheck" checked> マイクの音（自分の声）
+                <input type="checkbox" id="micAudioCheck" checked> マイク（自分の声）
             </label>
         </div>
 
@@ -149,16 +135,11 @@
         <div id="status">準備完了</div>
     </div>
 
-    <div class="tip-box">
-        <strong>💡 2つのタブを同時に動画録画するコツ：</strong><br>
-        2つのタブを別々のウィンドウに切り離し、PC画面上に左右に並べます。その後「記録開始」を押し、ポップアップで<b>「画面全体」</b>または並べた<b>「ウィンドウ」</b>を選択して録画してください。
-    </div>
-
     <div id="previewContainer" style="display: none;">
         <h3>プレビュー / ダウンロード</h3>
         <div id="mediaPreviewPlace"></div>
         <br>
-        <a id="downloadBtn" class="download-link" href="#" download="recording.webm">ファイルを保存する</a>
+        <a id="downloadBtn" class="download-link" href="#">ファイルを保存する</a>
     </div>
 
     <script>
@@ -177,6 +158,22 @@
         const previewContainer = document.getElementById('previewContainer');
         const downloadBtn = document.getElementById('downloadBtn');
 
+        // Chromebook（ChromeOS）で一番軽くて動作するコーデックを自動選択
+        function getSupportedMimeType(mode) {
+            if (mode === "audio") return 'audio/webm; codecs=opus';
+            
+            // 動画の場合、負荷の低いVP8またはH.264を優先（重いVP9を回避）
+            const types = [
+                'video/webm; codecs=vp8,opus',
+                'video/webm; codecs=h264,opus',
+                'video/webm'
+            ];
+            for (let type of types) {
+                if (MediaRecorder.isTypeSupported(type)) return type;
+            }
+            return '';
+        }
+
         startBtn.addEventListener('click', async () => {
             recordedChunks = [];
             currentMode = document.querySelector('input[name="recordMode"]:checked').value;
@@ -186,20 +183,22 @@
             let displayStream = null;
 
             try {
-                // Web Audio APIの初期化（音声をミックスするため）
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 audioDestination = audioContext.createMediaStreamDestination();
                 let hasAudio = false;
 
-                // 1. 【動画モードの場合】画面キャプチャを取得
+                // 1. 画面キャプチャ（HD 720p / 30fps に制限して劇的に軽量化）
                 if (currentMode === "video") {
                     displayStream = await navigator.mediaDevices.getDisplayMedia({
-                        video: { width: 1920, height: 1080, frameRate: 30 },
+                        video: { 
+                            width: { ideal: 1280, max: 1280 }, 
+                            height: { ideal: 720, max: 720 }, 
+                            frameRate: { ideal: 30, max: 30 } 
+                        },
                         audio: true 
                     });
                     videoTrack = displayStream.getVideoTracks()[0];
 
-                    // システム音の処理
                     if (systemAudioCheck.checked && displayStream.getAudioTracks().length > 0) {
                         const systemAudioSource = audioContext.createMediaStreamSource(new MediaStream([displayStream.getAudioTracks()[0]]));
                         systemAudioSource.connect(audioDestination);
@@ -208,29 +207,20 @@
                         displayStream.getAudioTracks().forEach(t => t.stop());
                     }
                 } 
-                // 2. 【音声のみモードの場合】かつシステム音が必要な場合、ダミーの画面共有で音だけ貰う
+                // 音声のみモード
                 else if (currentMode === "audio" && systemAudioCheck.checked) {
                     try {
-                        displayStream = await navigator.mediaDevices.getDisplayMedia({
-                            video: true, // 音だけ取る場合も一度video:trueにする必要があります
-                            audio: true
-                        });
-                        // 映像トラックはすぐ捨てる（非表示）
+                        displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
                         displayStream.getVideoTracks().forEach(t => t.stop());
-                        
                         if (displayStream.getAudioTracks().length > 0) {
                             const systemAudioSource = audioContext.createMediaStreamSource(new MediaStream([displayStream.getAudioTracks()[0]]));
                             systemAudioSource.connect(audioDestination);
                             hasAudio = true;
-                        } else {
-                            alert("タブ音声の共有が選択されなかったため、システム音は録音されません。");
                         }
-                    } catch(e) {
-                        console.warn("システム音声の取得がキャンセルされました。");
-                    }
+                    } catch(e) { console.warn(e); }
                 }
 
-                // 3. マイク音声の処理
+                // 2. マイク音声
                 if (micAudioCheck.checked) {
                     try {
                         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -239,29 +229,20 @@
                         hasAudio = true;
                         audioTracks.push(...micStream.getAudioTracks());
                     } catch (err) {
-                        console.warn("マイクが見つからないか許可がありません:", err);
-                        if(currentMode === "audio" && !hasAudio) throw new Error("録音する音声ソースがありません");
+                        console.warn(err);
                     }
                 }
 
-                // 4. トラックの組み立てとMediaRecorderの作成
+                // 3. ストリーム統合
                 const finalTracks = [];
-                let mimeType = 'video/webm; codecs=vp9,opus';
-                let extension = 'webm';
+                const mimeType = getSupportedMimeType(currentMode);
 
                 if (currentMode === "video") {
                     finalTracks.push(videoTrack);
                     if (hasAudio) finalTracks.push(audioDestination.stream.getAudioTracks()[0]);
                 } else {
-                    // 音声のみ
-                    if (hasAudio) {
-                        finalTracks.push(audioDestination.stream.getAudioTracks()[0]);
-                    } else {
-                        alert("システム音とマイクの両方がOFF、または取得できませんでした。");
-                        return;
-                    }
-                    mimeType = 'audio/webm; codecs=opus';
-                    extension = 'webm'; // またはmp3/wavに変換が必要ですが軽量化のためwebm(audio)
+                    if (hasAudio) finalTracks.push(audioDestination.stream.getAudioTracks()[0]);
+                    else { alert("音声ソースがありません"); return; }
                 }
 
                 const combinedStream = new MediaStream(finalTracks);
@@ -272,27 +253,23 @@
                 };
 
                 mediaRecorder.onstop = () => {
-                    // 終了処理
                     if(videoTrack) videoTrack.stop();
                     audioTracks.forEach(t => t.stop());
                     if(displayStream) displayStream.getAudioTracks().forEach(t => t.stop());
                     if (audioContext) audioContext.close();
 
-                    // ファイル化
                     const blob = new Blob(recordedChunks, { type: mimeType });
                     const url = URL.createObjectURL(blob);
                     
-                    // プレビュー表示の切り替え
                     if (currentMode === "video") {
                         mediaPreviewPlace.innerHTML = `<video id="playback" controls src="${url}"></video>`;
-                        downloadBtn.textContent = "動画を保存する (.webm)";
-                        downloadBtn.download = `recording_${Date.now()}.webm`;
+                        downloadBtn.textContent = "動画を保存 (.webm)";
                     } else {
                         mediaPreviewPlace.innerHTML = `<audio id="playback" controls src="${url}"></audio>`;
-                        downloadBtn.textContent = "音声を保存する (.webm/audio)";
-                        downloadBtn.download = `audio_${Date.now()}.webm`;
+                        downloadBtn.textContent = "音声を保存 (.webm)";
                     }
                     
+                    downloadBtn.download = `${currentMode}_${Date.now()}.webm`;
                     downloadBtn.href = url;
                     previewContainer.style.display = 'block';
                     statusDiv.textContent = '記録終了！保存できます。';
@@ -302,14 +279,10 @@
                     stopBtn.disabled = true;
                 };
 
-                // 録画・録音開始
+                // 録画開始
                 mediaRecorder.start();
                 statusDiv.classList.add('status-recording');
-                if (currentMode === "video") {
-                    statusDiv.innerHTML = '● 動画録画中...<br><span style="font-size:11px;">※2つのタブを撮る場合は、画面を左右に並べて「画面全体」を共有してください</span>';
-                } else {
-                    statusDiv.textContent = '● 音声のみ録音中...';
-                }
+                statusDiv.textContent = currentMode === "video" ? "● 録画中（低負荷モード）..." : "● 録音中...";
                 
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
@@ -321,17 +294,15 @@
                 }
 
             } catch (err) {
-                console.error("エラー:", err);
-                statusDiv.textContent = '開始できませんでした（キャンセルされたか、デバイス権限がありません）';
+                console.error(err);
+                statusDiv.textContent = 'エラー：開始できませんでした。';
                 if (videoTrack) videoTrack.stop();
                 if (audioContext) audioContext.close();
             }
         });
 
         stopBtn.addEventListener('click', () => {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-            }
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
         });
     </script>
 </body>
