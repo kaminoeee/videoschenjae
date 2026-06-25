@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>軽量画面録画ツール</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 { color: #2c3e50; }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .checkbox-group {
+            margin-bottom: 15px;
+        }
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #startBtn { background-color: #2ecc71; color: white; }
+        #startBtn:hover { background-color: #27ae60; }
+        #stopBtn { background-color: #e74c3c; color: white; }
+        #stopBtn:hover { background-color: #c0392b; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        #status {
+            font-weight: bold;
+            margin: 10px 0;
+            color: #7f8c8d;
+        }
+        .status-recording { color: #e74c3c !important; }
+        video {
+            width: 100%;
+            max-width: 640px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            background: #000;
+        }
+        .download-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .download-link:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body>
+
+    <h1>軽量画面録画ツール</h1>
+    <p>インストール不要。ブラウザだけで完結する安全な録画ツールです。</p>
+
+    <div class="controls">
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="audioCheck" checked> マイク音声も録音する
+            </label>
+        </div>
+        <button id="startBtn">録画開始</button>
+        <button id="stopBtn" disabled>録画停止</button>
+        <div id="status">準備完了</div>
+    </div>
+
+    <div id="previewContainer" style="display: none;">
+        <h3>プレビュー / ダウンロード</h3>
+        <video id="playback" controls></video>
+        <br>
+        <a id="downloadBtn" class="download-link" href="#" download="recording.webm">動画を保存する (.webm)</a>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+        
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusDiv = document.getElementById('status');
+        const audioCheck = document.getElementById('audioCheck');
+        const playback = document.getElementById('playback');
+        const previewContainer = document.getElementById('previewContainer');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        startBtn.addEventListener('click', async () => {
+            recordedChunks = [];
+            try {
+                // 1. 画面キャプチャのストリームを取得
+                // ※ブラウザのポップアップで「全画面」「ウィンドウ」「タブ」を選択できます
+                const displayStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { width: 1920, height: 1080, frameRate: 30 },
+                    audio: true // システム音の共有を許可（タブ録画時はタブの音が入ります）
+                });
+
+                let combinedStream = displayStream;
+
+                // 2. マイク音声の追加（チェックが入っている場合）
+                if (audioCheck.checked) {
+                    try {
+                        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const tracks = [...displayStream.getVideoTracks(), ...audioStream.getAudioTracks()];
+                        
+                        // システム音もある場合はそれも混ぜる
+                        if (displayStream.getAudioTracks().length > 0) {
+                            tracks.push(displayStream.getAudioTracks()[0]);
+                        }
+                        
+                        combinedStream = new MediaStream(tracks);
+                    } catch (err) {
+                        console.warn("マイクの許可が得られなかったため、マイク無しで録画します:", err);
+                    }
+                }
+
+                // 3. MediaRecorderの設定（軽量かつ一般的なWebMフォーマット）
+                mediaRecorder = new MediaRecorder(combinedStream, {
+                    mimeType: 'video/webm; codecs=vp9,opus'
+                });
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        recordedChunks.push(e.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    // ストリームの全トラックを停止
+                    combinedStream.getTracks().forEach(track => track.stop());
+                    displayStream.getTracks().forEach(track => track.stop());
+
+                    // 動画ファイルの生成
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    playback.src = url;
+                    downloadBtn.href = url;
+                    
+                    previewContainer.style.display = 'block';
+                    statusDiv.textContent = '録画が終了しました。ダウンロードできます。';
+                    statusDiv.classList.remove('status-recording');
+                    
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                };
+
+                // 録画開始
+                mediaRecorder.start();
+                statusDiv.textContent = '● 録画中... (タブや画面を切り替えても録画は継続します)';
+                statusDiv.classList.add('status-recording');
+                
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+
+                // 共有停止ボタン（ブラウザ上部のUI）が押されたときの対策
+                displayStream.getVideoTracks()[0].onended = () => {
+                    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                        mediaRecorder.stop();
+                    }
+                };
+
+            } catch (err) {
+                console.error("録画の開始に失敗しました:", err);
+                statusDiv.textContent = 'エラー: 画面共有がキャンセルされたか、権限がありません。';
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        });
+    </script>
+</body>
+</html>
